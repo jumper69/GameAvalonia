@@ -9,7 +9,15 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
+	<Folder Include="Assets\" />
     <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\delta-7.png" />
+    <None Remove="Assets\explosion.mp3" />
+    <None Remove="Assets\laser.mp3" />
+    <None Remove="Assets\tie-skx1.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +30,8 @@
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.18" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
+    <PackageReference Include="MediaPlayer.Avalonia" Version="1.0.1" />
+    <PackageReference Include="NAudio" Version="2.1.0" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.6.1" />
   </ItemGroup>
 </Project>

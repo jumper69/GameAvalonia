@@ -1,17 +1,15 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
-using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media.Imaging;
-using System.Numerics;
+using NAudio.Wave;
 
 namespace GameAvalonia.Views
 {
@@ -25,18 +23,14 @@ namespace GameAvalonia.Views
 
         int enemySpriteCounter = 0;
         int enemyCounter = 100;
-        int playerSpeed = 10;
+        int playerSpeed = 15;
         int limit = 50;
         int score = 0;
-        int damage = 0;
+        int health = 100;
         int enemySpeed = 10;
-        
-        //
-        //private TextBlock scoreText;
-        //private TextBlock damageText;
-        //private Rectangle _player;
-        //private _canvas __canvas;
-        //
+
+        private WaveOutEvent waveOut;
+
         Rect playerHitBox;
 
         
@@ -46,9 +40,10 @@ namespace GameAvalonia.Views
             InitializeComponent();
 
             scoreText = this.FindControl<TextBlock>("scoreText");
-            damageText = this.FindControl<TextBlock>("damageText");
+            healthText = this.FindControl<TextBlock>("healthText");
             _canvas = this.FindControl<Canvas>("_canvas");
             _player = this.FindControl<Rectangle>("_player");
+            waveOut = new WaveOutEvent();
 
             gameTimer.Interval = TimeSpan.FromMilliseconds(20);
             gameTimer.Tick += GameLoop;
@@ -58,14 +53,11 @@ namespace GameAvalonia.Views
 
             ImageBrush bg = new ImageBrush();
 
-            bg.Source = new Bitmap("C:\\Users\\mikos\\source\\repos\\GameAvalonia\\GameAvalonia\\Assets\\KosmosImg.png");
-            //bg.TileMode = TileMode.Tile;
-            //bg.Viewport = new Rect(0, 0, 0.15, 0.15);
-            //bg.ViewportUnits = BrushMappingMode.RelativeToBoundingBox;
+            bg.Source = new Bitmap("Assets/Images/background.png");
             _canvas.Background = bg;
 
             ImageBrush playerImage = new ImageBrush();
-            playerImage.Source = new Bitmap("C:\\Users\\mikos\\source\\repos\\GameAvalonia\\GameAvalonia\\Assets\\x-wing.png");
+            playerImage.Source = new Bitmap("Assets/Images/x-wing.png");
             _player.Fill = playerImage;
         }
 
@@ -80,7 +72,7 @@ namespace GameAvalonia.Views
             enemyCounter -= 1;
             scoreText.Text = "Score: " + score;
 
-            damageText.Text = "Damage " + damage;
+            healthText.Text = "Health " + health;
 
             if (enemyCounter < 0)
             {
@@ -90,20 +82,20 @@ namespace GameAvalonia.Views
 
             if (moveLeft == true && Canvas.GetLeft(_player) > 0)
             {
-                Canvas.SetLeft(_player, Canvas.GetLeft(_player) - playerSpeed * 1.5);
+                Canvas.SetLeft(_player, Canvas.GetLeft(_player) - playerSpeed);
             }
             if (moveRight == true && Canvas.GetLeft(_player) + 90 < Width)
             {
-                Canvas.SetLeft(_player, Canvas.GetLeft(_player) + playerSpeed * 1.5);
+                Canvas.SetLeft(_player, Canvas.GetLeft(_player) + playerSpeed);
             }
 
                 foreach (var x in _canvas.Children.OfType<Rectangle>())
                 {
-                    if (x is Rectangle && (string)x.Tag == "bullet")
+                    if (x is Rectangle && (string)x.Tag == "laser")
                     {
-                        Canvas.SetTop(x, Canvas.GetTop(x) - 20);
+                        Canvas.SetTop(x, Canvas.GetTop(x) - 40);
 
-                        Rect bulletHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
+                        Rect laserHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
 
                         if (Canvas.GetTop(x) < 10)
                         {
@@ -116,12 +108,19 @@ namespace GameAvalonia.Views
                             {
                                 Rect enemyHit = new Rect(Canvas.GetLeft(y), Canvas.GetTop(y), y.Width, y.Height);
 
-                                if (bulletHitBox.Intersects(enemyHit))
+                                if (laserHitBox.Intersects(enemyHit))
                                 {
                                     itemRemover.Add(x);
                                     itemRemover.Add(y);
                                     score++;
+
+                                using (var audioFileHit = new AudioFileReader("Assets/Sounds/explosion.mp3"))
+                                {
+                                    waveOut.Stop();
+                                    waveOut.Init(audioFileHit);
+                                    waveOut.Play();
                                 }
+                            }
                             }
                         }
                     }
@@ -133,7 +132,7 @@ namespace GameAvalonia.Views
                         if (Canvas.GetTop(x) > 750)
                         {
                             itemRemover.Add(x);
-                            damage += 10;
+                            health -= 10;
                         }
 
                         Rect enemyHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
@@ -141,7 +140,7 @@ namespace GameAvalonia.Views
                         if (playerHitBox.Intersects(enemyHitBox))
                         {
                             itemRemover.Add(x);
-                            damage += 5;
+                            health -= 5;
                         }
                     }
                 }
@@ -157,15 +156,11 @@ namespace GameAvalonia.Views
                 enemySpeed = 15;
             }
 
-            if (damage > 99)
+            if (health < 1)
             {
                 gameTimer.Stop();
-                damageText.Text = "Damage: 100";
-                damageText.Foreground = Brushes.Red;
-                ////MessageBox.Show("Captain You have destroyed " + score + " Alien Ships" + Environment.NewLine + "Press Ok to Play Again", "MOO Says: ");
-                // System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
-                // Application.Current.Shutdown();
-
+                healthText.Text = "Health: 0";
+                healthText.Foreground = Brushes.Red;
             }
         }
 
@@ -194,19 +189,25 @@ namespace GameAvalonia.Views
 
             if (e.Key == Key.Space)
             {
-                Rectangle newBullet = new Rectangle
+                Rectangle newLaser = new Rectangle
                 {
-                    Tag = "bullet",
+                    Tag = "laser",
                     Height = 20,
                     Width = 5,
-                    Fill = Brushes.Red,
-                    Stroke = Brushes.Red
+                    Fill = Brushes.CadetBlue,
+                    Stroke = Brushes.Blue
                 };
 
-                Canvas.SetLeft(newBullet, Canvas.GetLeft(_player) + _player.Width / 2);
-                Canvas.SetTop(newBullet, Canvas.GetTop(_player) - newBullet.Height);
-                _canvas.Children.Add(newBullet);
+                Canvas.SetLeft(newLaser, Canvas.GetLeft(_player) + _player.Width / 2);
+                Canvas.SetTop(newLaser, Canvas.GetTop(_player) - newLaser.Height);
+                _canvas.Children.Add(newLaser);
 
+                using (var audioFileLaser = new AudioFileReader("Assets/Sounds/laser.mp3"))
+                {
+                    waveOut.Stop();
+                    waveOut.Init(audioFileLaser);
+                    waveOut.Play();
+                }
             }
         }
         private void MakeEnemies()
@@ -218,27 +219,24 @@ namespace GameAvalonia.Views
             switch (enemySpriteCounter)
             {
                 case 1:
-                    enemySprite.Source = new Bitmap("C:\\Users\\mikos\\source\\repos\\GameAvalonia\\GameAvalonia\\Assets\\tie-fighter.png");
+                    enemySprite.Source = new Bitmap("Assets/Images/tie-fighter.png");
                     break;
                 case 2:
-                    enemySprite.Source = new Bitmap("C:\\Users\\mikos\\source\\repos\\GameAvalonia\\GameAvalonia\\Assets\\2.png");
+                    enemySprite.Source = new Bitmap("Assets/Images/tie-skx1.png");
                     break;
                 case 3:
-                    enemySprite.Source = new Bitmap("C:\\Users\\mikos\\source\\repos\\GameAvalonia\\GameAvalonia\\Assets\\3.png");
+                    enemySprite.Source = new Bitmap("Assets/Images/delta-7.png");
                     break;
                 case 4:
-                    enemySprite.Source = new Bitmap("C:\\Users\\mikos\\source\\repos\\GameAvalonia\\GameAvalonia\\Assets\\4.png");
-                    break;
-                case 5:
-                    enemySprite.Source = new Bitmap("C:\\Users\\mikos\\source\\repos\\GameAvalonia\\GameAvalonia\\Assets\\5.png");
+                    enemySprite.Source = new Bitmap("Assets/Images/4.png");
                     break;
             }
 
             Rectangle newEnemy = new Rectangle
             {
                 Tag = "enemy",
-                Height = 50,
-                Width = 56,
+                Height = 70,
+                Width = 84,
                 Fill = enemySprite
             };
 
