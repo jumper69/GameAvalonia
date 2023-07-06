@@ -1,0 +1,13 @@
+<Window x:Class="GameAvalonia.Views.GameOverWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Game Over" Height="200" Width="300">
+	<Grid>
+		<TextBlock x:Name="gameOverText" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="24" Margin="0,30,0,0" Text="Game Over"/>
+		<TextBlock x:Name="scoreText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Text="Score: 0"/>
+		<Button x:Name="restartButton" Content="Restart" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,30" Click="OnRestartClick"/>
+	</Grid>
+</Window>

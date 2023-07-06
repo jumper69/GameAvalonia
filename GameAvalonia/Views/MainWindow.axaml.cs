@@ -54,6 +54,7 @@ namespace GameAvalonia.Views
             ImageBrush bg = new ImageBrush();
 
             bg.Source = new Bitmap("Assets/Images/background.png");
+            bg.Stretch = Stretch.UniformToFill;
             _canvas.Background = bg;
 
             ImageBrush playerImage = new ImageBrush();
@@ -93,7 +94,7 @@ namespace GameAvalonia.Views
                 {
                     if (x is Rectangle && (string)x.Tag == "laser")
                     {
-                        Canvas.SetTop(x, Canvas.GetTop(x) - 40);
+                        Canvas.SetTop(x, Canvas.GetTop(x) - 60);
 
                         Rect laserHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
 
@@ -129,7 +130,7 @@ namespace GameAvalonia.Views
                     {
                         Canvas.SetTop(x, Canvas.GetTop(x) + enemySpeed);
 
-                        if (Canvas.GetTop(x) > 750)
+                        if (Canvas.GetTop(x) > 1000)
                         {
                             itemRemover.Add(x);
                             health -= 10;
@@ -161,6 +162,14 @@ namespace GameAvalonia.Views
                 gameTimer.Stop();
                 healthText.Text = "Health: 0";
                 healthText.Foreground = Brushes.Red;
+
+                GameOverWindow gameOverWindow = new GameOverWindow
+                {
+                    MainGameWindow = this,
+                    Score = score
+                };
+                gameOverWindow.SetScore(score);
+                gameOverWindow.ShowDialog(this);
             }
         }
 
@@ -192,10 +201,9 @@ namespace GameAvalonia.Views
                 Rectangle newLaser = new Rectangle
                 {
                     Tag = "laser",
-                    Height = 20,
+                    Height = 25,
                     Width = 5,
-                    Fill = Brushes.CadetBlue,
-                    Stroke = Brushes.Blue
+                    Fill = Brushes.CadetBlue
                 };
 
                 Canvas.SetLeft(newLaser, Canvas.GetLeft(_player) + _player.Width / 2);
@@ -228,7 +236,7 @@ namespace GameAvalonia.Views
                     enemySprite.Source = new Bitmap("Assets/Images/delta-7.png");
                     break;
                 case 4:
-                    enemySprite.Source = new Bitmap("Assets/Images/4.png");
+                    enemySprite.Source = new Bitmap("Assets/Images/v-19.png");
                     break;
             }
 
@@ -243,6 +251,32 @@ namespace GameAvalonia.Views
             Canvas.SetTop(newEnemy, -100);
             Canvas.SetLeft(newEnemy, rand.Next(30, 430)); 
             _canvas.Children.Add(newEnemy);
+        }
+        public void ResetGame()
+        {
+            health = 100;
+            score = 0;
+            enemySpeed = 10;
+            limit = 50;
+            moveLeft = false;
+            moveRight = false;
+            enemyCounter = 100;
+            healthText.Foreground = Brushes.White;
+            foreach (var x in _canvas.Children.OfType<Rectangle>().ToList())
+            {
+                _canvas.Children.Remove(x);
+            }
+
+            Canvas.SetLeft(_player, 324);
+            Canvas.SetTop(_player, 900);
+
+            if (!_canvas.Children.Contains(_player))
+            {
+                _canvas.Children.Add(_player);
+            }
+
+            gameTimer.Start();
+            Focus();
         }
     }
 }

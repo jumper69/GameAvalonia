@@ -5,11 +5,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Avalonia Space Shooter" Height="768" Width="615">
-	<Canvas x:Name="_canvas" Background="LightBlue" KeyDown="OnKeyDown" KeyUp="OnKeyUp" Focusable="True">
-		<Rectangle x:Name="_player" Height="70" Width="84" Fill="Yellow" Canvas.Left="222" Canvas.Top="630"/>
-		<TextBlock x:Name="scoreText" Text="Score: 0" FontSize="18" FontWeight="Bold" Foreground="White"/>
-		<TextBlock x:Name="healthText" Text="Health: 0" FontSize="18" FontWeight="Bold" Canvas.Right="0" Foreground="White"/>
-
+        Title="Avalonia Space Shooter" Height="1024" Width="768">
+	    <Canvas x:Name="_canvas" KeyDown="OnKeyDown" KeyUp="OnKeyUp" Focusable="True">
+		<Rectangle x:Name="_player" Height="70" Width="84" Fill="Yellow" Canvas.Left="324" Canvas.Top="900"/>
+		<TextBlock x:Name="scoreText" Text="Score: 0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+		<TextBlock x:Name="healthText" Text="Health: 0" FontSize="20" FontWeight="Bold" Canvas.Right="0" Foreground="White"/>
 	</Canvas>
 </Window>

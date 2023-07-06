@@ -34,4 +34,10 @@
     <PackageReference Include="NAudio" Version="2.1.0" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.6.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\GameOverWindow.axaml.cs">
+      <DependentUpon>GameOverWindow.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
